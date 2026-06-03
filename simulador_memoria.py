@@ -13,13 +13,26 @@ class Frame:
         self.pagina_alocada = None  # Armazena o número da página ou None se estiver vazio
         # Dica para os alunos: vocês podem adicionar atributos aqui para ajudar no algoritmo (ex: timestamp, contador)
 
+        # Auxiliar para FIFO
+        self.ordem_chegada = 0
+
+        # Auxiliar para Segunda Chance (Clock)
+        self.bit_referencia = 0
+
 
 class TabelaPaginas:
-    def __init__(self, num_frames):
+    def __init__(self, num_frames, algoritmo):
         # Inicializa a memória física com a quantidade de frames especificada
         self.frames = [Frame(i) for i in range(num_frames)]
         self.total_page_faults = 0
         self.total_acessos = 0
+
+        # Algoritmo selecionado
+        self.algoritmo = algoritmo
+        # Controle do FIFO
+        self.contador_fifo = 0
+        # Ponteiro circular do Clock
+        self.clock_pointer = 0
 
     def acessar_pagina(self, numero_pagina):
         self.total_acessos += 1
@@ -99,7 +112,7 @@ class Simulador:
 
         # A primeira linha válida define o número de frames na memória RAM simulada
         num_frames = int(linhas[0])
-        tabela_paginas = TabelaPaginas(num_frames)
+        tabela_paginas = TabelaPaginas(num_frames, "FIFO")
 
         print(f"Iniciando simulação com {num_frames} frames disponíveis.")
         print("=" * 40)
