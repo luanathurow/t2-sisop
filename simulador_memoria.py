@@ -50,12 +50,32 @@ class TabelaPaginas:
         for frame in self.frames:
             if frame.pagina_alocada is None:
                 frame.pagina_alocada = numero_pagina
+
+                self.contador_fifo += 1
+                frame.ordem_chegada = self.contador_fifo
+                frame.bit_referencia = 1
+
                 # TODO: Se necessário para o algoritmo, inicialize metadados do frame aqui.
                 return False, frame.id_frame  # Retorna (Hit=False, frame_id)
 
         # 4. Memória cheia: Aplicar algoritmo de substituição de página
         frame_vitima_id = self.substituir_pagina(numero_pagina)
         return False, frame_vitima_id
+    
+    def substituir_fifo(self, nova_pagina):
+
+        frame_vitima = min(
+        self.frames,
+        key=lambda frame: frame.ordem_chegada
+        )
+
+        frame_vitima.pagina_alocada = nova_pagina
+
+        self.contador_fifo += 1
+        frame_vitima.ordem_chegada = self.contador_fifo
+        frame_vitima.bit_referencia = 1
+
+        return frame_vitima.id_frame
 
     def substituir_pagina(self, nova_pagina):
         """
@@ -64,14 +84,15 @@ class TabelaPaginas:
         com base no algoritmo escolhido (FIFO ou LRU), atualizar o frame
         escolhido com a nova_pagina e retornar o ID do frame que foi alterado.
         """
-        frame_escolhido_id = 0
+        # frame_escolhido_id = 0
 
         # Escreva a lógica do algoritmo aqui...
 
         # Exemplo de atualização (substitua pela lógica real):
         # self.frames[frame_escolhido_id].pagina_alocada = nova_pagina
 
-        return frame_escolhido_id
+        #return frame_escolhido_id
+        return self.substituir_fifo(nova_pagina)
 
     def imprimir_mapa_memoria(self, passo, pagina_acessada, foi_hit, frame_alterado=None):
         """
