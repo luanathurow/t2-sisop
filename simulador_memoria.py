@@ -40,7 +40,7 @@ class TabelaPaginas:
         # 1. Verificar se a página já está em algum frame (Hit)
         for frame in self.frames:
             if frame.pagina_alocada == numero_pagina:
-                # TODO: Se necessário para o algoritmo (ex: LRU), atualize metadados aqui.
+                frame.bit_referencia = 1
                 return True, frame.id_frame  # Retorna (Hit=True, frame_id)
 
         # 2. Se não encontrou, ocorreu um Page Fault!
@@ -76,23 +76,35 @@ class TabelaPaginas:
         frame_vitima.bit_referencia = 1
 
         return frame_vitima.id_frame
+    
+    def substituir_clock(self, nova_pagina):
+        while True:
+            frame_atual = self.frames[self.clock_pointer]
+
+            if frame_atual.bit_referencia == 0:
+                # Encontrou a vítima
+                frame_atual.pagina_alocada = nova_pagina
+                frame_atual.bit_referencia = 1
+
+                frame_alterado_id = frame_atual.id_frame
+
+                self.clock_pointer = (self.clock_pointer + 1) % len(self.frames)
+                return frame_alterado_id
+            else:
+                
+                frame_atual.bit_referencia = 0
+                self.clock_pointer = (self.clock_pointer + 1) % len(self.frames)
 
     def substituir_pagina(self, nova_pagina):
-        """
-        TODO: IMPLEMENTAR PELO GRUPO
-        Esta função deve escolher uma página 'vítima' para ser substituída
-        com base no algoritmo escolhido (FIFO ou LRU), atualizar o frame
-        escolhido com a nova_pagina e retornar o ID do frame que foi alterado.
-        """
-        # frame_escolhido_id = 0
+            if self.algoritmo == "FIFO":
+                return self.substituir_fifo(nova_pagina)
 
-        # Escreva a lógica do algoritmo aqui...
+            elif self.algoritmo == "CLOCK":
+                return self.substituir_clock(nova_pagina)
 
-        # Exemplo de atualização (substitua pela lógica real):
-        # self.frames[frame_escolhido_id].pagina_alocada = nova_pagina
-
-        #return frame_escolhido_id
-        return self.substituir_fifo(nova_pagina)
+            else:
+                print("Algoritmo inválido. Usando FIFO como padrão.")
+                return self.substituir_fifo(nova_pagina)
 
     def imprimir_mapa_memoria(self, passo, pagina_acessada, foi_hit, frame_alterado=None):
         """
@@ -134,6 +146,7 @@ class Simulador:
         # A primeira linha válida define o número de frames na memória RAM simulada
         num_frames = int(linhas[0])
         tabela_paginas = TabelaPaginas(num_frames, "FIFO")
+        #tabela_paginas = TabelaPaginas(num_frames, "CLOCK")
 
         print(f"Iniciando simulação com {num_frames} frames disponíveis.")
         print("=" * 40)
